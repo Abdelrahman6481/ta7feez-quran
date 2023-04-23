@@ -1,0 +1,568 @@
+/* general */
+html, body {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  --all-width: clamp(10rem, 80vw, 35rem);
+}
+
+body {
+  text-align: center; /* center everything */
+
+}
+#body {
+  background-color: var(--background);
+  height: 100vh;
+  width: 100vw;
+  direction: rtl;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+#all {
+  display: inline-block;
+  width: var(--all-width);
+}
+
+#body {
+  /* general */
+  --btn-base-width: min(35vw, 10rem);
+  --faint-btn: #666;
+  --uitext: #233; --txt: #111;
+  --txt-font: AmiriQuranWeb;
+  --background-rgb: 249, 246, 231; /* old: 249, 244, 214; */
+  --content-rgb:    252, 250, 241;
+  --background: rgb(var(--background-rgb));
+  --background-translucent: rgba(var(--background-rgb), 0.66);
+  --details-bg: white; --details-shadow: black;
+  --title-rgb: 0, 0, 0;
+  /* tajweed */
+  --L: #bb6666; --W: red;     --J: orangered; --T: #ff9900;    --N: #009000;
+  --X: #9595a0; --R: #2222e0; --Q: #00a5e7;   --A: darkorange; --D: navy;
+  /* ayat number color */
+  --A-shadow: 1px  1px  1px gold,
+              1px -1px  1px gold,
+             -1px  1px  1px gold,
+             -1px -1px  1px gold,
+              0    0    5px blue;
+  --D-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+  /* help & options : tab label */
+  --tab-txt: #000;
+  --tab-active-txt: var(--tab-txt);
+  --tab: gold;
+  --tab-active: yellow;
+}
+
+#dark:checked ~ #body {
+  /* general */
+  --faint-btn: #555;
+  --uitext: #ccc;  --txt: #eee;  --background-rgb: 13, 13, 13; --content-rgb: 23, 23, 23;
+  --details-bg: black; --details-shadow: white;
+  --title-rgb: 255, 255, 255;
+  /* tajweed */
+  --L: #bb5555;  --W: red    ;  --J: #ff6600;  --T: #ffbb00;  --N: #00ff00;
+  --X: #808080;  --R: #4477ff;  --Q: #00d6ff;  --A: #ff8c00;  --D: #ffffff;
+  /* ayat number color */
+  /* --A: #ff8c00; --D: #ffffff; */
+  /* help & options : tab label */
+  --tab-txt: #ddb;
+  --tab-active-txt: white;
+  --tab: #A1761B;  /* a very dark goldenrod; from: https://colorcodes.io/yellow/goldenrod-color-codes/ */
+  --tab-active: darkgoldenrod;
+}
+
+:not(input, button, select) { color: var(--uitext); } /* are just inverted */
+#uthm_txt { color: var(--txt); }
+
+.L { color: var(--L) } .W { color: var(--W) } .J { color: var(--J) } .T { color: var(--T) }
+.N { color: var(--N) } .X { color: var(--X) } .R { color: var(--R) } .Q { color: var(--Q) }
+.A { color: var(--A); text-shadow: var(--A-shadow) }
+.D { color: var(--D); text-shadow: var(--D-shadow) }
+
+/* general */
+#body { scroll-behavior: smooth; }
+::selection { background: rgba(0,0,255,0.1); }
+
+/* https://bits.theorem.co/css-pro-tips-responsive-font-sizes-and-when-to-use-which-units */
+html { font-size: calc(16px + 0.5vw) }
+
+* {
+  font-family: Cortoba;
+  font-size: inherit; /* some widgets default to another value */
+}
+
+#uthm_txt, #uthm_txt * { font-family: var(--txt-font); font-size: 1.5rem; }
+#uthm_txt {
+  text-align: right;
+  padding: 0 1em;
+  padding-bottom: 4rem;
+}
+#endmsg {
+  font-size: min(5vw, 2rem);
+  text-align: center;
+  color: var(--uitext);
+  margin: auto;
+  /* margin-top: -3rem;  /1* counter padding-bottom for #txt *1/ */
+  /* the negative margin-top is commented out because I find it better to have
+   * more space between #txt and #endmsg, especially after making #endmsg show
+   * with the last word, not after it. */
+  padding-bottom: 1rem;
+}
+
+#selectors,
+#header {
+  padding: 0;
+  padding-top: 0.5rem;
+  position: var(--sticky);  /* static (default) in imlaai; sticky in uthmani */
+  background-color: var(--background-translucent);
+  top:        -4.8rem;
+  margin-top: -5.1rem;
+  padding-top: 5.1rem;
+  z-index: 2;
+}
+
+#title {
+  display: none;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: rgb(var(--title-rgb));
+  position: relative; z-index: 3;  /* above #header */
+  font-family: KacstOne;
+  font-size: clamp(0.5rem, 3.5vw, 1.25rem);
+}
+
+/* To keep #header in place, covering the area under the curve (of the tab labels) */
+/* I want to make sure its height is 1em, so it's either one line, or two lines with size 0.5em */
+/* I used KacstOne. The longest sura name in that font is sura 29. The longest "aaya" is the last one: "الأخيرة" */
+/* I also don't want to make it too small if the title is short; hence the adaptive font-size to content. */
+
+#title.manymany { font-size: clamp(0.5rem, 2.8vw, 1.25rem) } /* "تسميع من سورة العنكبوت الآية الأخيرة حتى سورة العنكبوت الآية الأخيرة" */
+
+
+#aaya_bgn, #aaya_end { font-family: KacstOne; }
+
+/* suar/ayat selection */
+#selectors > div label:first-child { /* من سورة and إلى سورة */
+  display: inline-block;
+  width: 4em;
+}
+#selectors > div {
+  display: inline-block;
+  max-width: 15em;
+  min-width: 40%;
+  margin: 0.1rem 0;
+}
+#aaya_bgn, #aaya_end { width: 1.5em; }
+/* #sura_bgn, #sura_end { width: 6.5em; } */
+#sura_bgn, #sura_end { width: 35%; }
+
+#options .option { margin-top: 0.5em; }
+#options .option:first-child { margin-top: 1.5em; }
+
+#options .mode_options_title {
+  display: block;
+  text-align: right;
+  padding-right: 2em;
+  margin-top: 0.3em;
+  font-family: Cortoba;
+  font-weight: normal;
+}
+
+#guide { display: none }  /* used for debugging */
+
+/* #options * { margin-top: 0 !important } */
+/* .mode_options_title { display: none !important } */
+/* #guide { */
+/*   display: block; */
+/*   width: 0; */
+/*   height: 10rem; */
+/*   color: red; */
+/*   position: absolute; */
+/*   top: 0; */
+/*   left: 15%; */
+/* } */
+
+#options {
+  /* text-align: right; */
+  padding: 0.5em 1em;
+  box-sizing: border-box;
+  width: var(--all-width);
+}
+
+#options * {
+  font-family: KacstOne, serif;  /* serif for latin, like in qaris */
+  font-weight: bold;
+  line-height: 1.7;
+}
+
+.option > * { margin: 0 }
+/* to make no unclickable space between the label and input. */
+
+#darkmode_option { width: 7em }
+#teacher_option { width: 14em }
+
+.option.optionally-inline {
+  display: inline-block;
+  margin: 0 1em;
+}
+
+#mode_options {
+  padding: 0; margin: 0;
+}
+
+#qaris         { width: calc(100% -  6.80em) }
+#quizmode      { width: calc(100% -  7.35em) }
+#mvbtns_input  { width: calc(100% -  9.40em) }
+#textclr_input { width: calc(100% -  6.45em) }
+#feedbackrate  { width: calc(100% -  9.25em) }
+
+#imla_txt { background: var(--background); color: var(--txt) }
+
+                      #imla_txt.done  { background: lightgreen }
+                      #imla_txt.wrong { background: pink }
+#dark:checked ~ #body #imla_txt.done  { background: #004400 }
+#dark:checked ~ #body #imla_txt.wrong { background: #441014 }
+
+#imla_txt {
+  font-size: 1.5rem;
+  text-align: right;
+  padding: 0 1em;
+  font-family: AmiriQuranWeb;
+  line-height: 1.7;  /* Amiri Quran is too high to make space for Quranic signs */
+  width: min(90%, 70vw);
+  /* height: 95vh; */ /* set thru JS */
+  margin: auto;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+button {
+  --width: var(--btn-base-width);
+  width: var(--width);
+  transition: opacity 0.5s ease-in-out;
+  touch-action: manipulation; /* disable double-tap zooming; https://stackoverflow.com/a/53236027 */
+}
+
+#mvbtns button {
+  --width: calc(var(--all-width) / 7.5);
+  margin: 0;
+  fill: var(--faint-btn);
+}
+
+#mvbtns #nextword {
+  /* --width: calc(0.50 * var(--btn-base-width)); */
+  width: calc(2*var(--width));
+  fill: #000;  /* inverted in darkmode; thus becomes #fff */
+}
+
+#mvbtns svg { width: 1em; height: 1em; }
+
+button, select, input, input[type=checkbox] + label {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+#dark:checked ~ #body kbd,
+#dark:checked ~ #body input,
+#dark:checked ~ #body button,
+#dark:checked ~ #body select { filter: invert(1) hue-rotate(180deg) }
+
+body.letter-parts #uthm_txt {
+  --txt-font: AmiriQuranColoredWeb;
+  --L: var(--txt); --W: var(--txt); --J: var(--txt); --T: var(--txt);
+  --N: var(--txt); --X: var(--txt); --R: var(--txt); --Q: var(--txt);
+}
+
+body.letter-nocolor #uthm_txt {
+  --L: var(--txt); --W: var(--txt); --J: var(--txt); --T: var(--txt);
+  --N: var(--txt); --X: var(--txt); --R: var(--txt); --Q: var(--txt);
+}
+
+body.ayat-nocolor #uthm_txt {
+  --A: var(--txt); --A-shadow: none;
+  --D: var(--txt); --D-shadow: none;
+}
+
+body.letter-parts:not(.ayat-nocolor) #uthm_txt .A,
+body.letter-parts:not(.ayat-nocolor) #uthm_txt .D {
+  font-family: AmiriQuranWeb;
+}
+
+/* all help elements are affected by invert and hue-rotate */
+#dark:checked ~ #body .help-part      { color: #f66 }
+#dark:checked ~ #body summary::marker { color: #f66 }
+/* #dark:checked ~ #body .help-part      { color: #f22 } */
+/* #dark:checked ~ #body summary::marker { color: #f22 } */
+#dark:checked ~ #body details *       { color: #aaf }
+#dark:checked ~ #body a               { color: #adf }
+#dark:checked ~ #body kbd             { color: #000 }  /* inverted */
+#dark:checked ~ #body summary         { color: #fff }
+
+a * { color: inherit !important }
+
+.help-part {
+    font-weight: normal;
+    color: #c00;
+    font-size: 120%;
+}
+.help-part::after  { content: " :."; }
+.help-part::before { content: ".: "; }
+
+details * {
+  font-family: KacstOne;
+  color: #008;
+}
+
+summary {
+  color: #000;
+  margin-right: -0.2em;
+}
+
+details strong {
+  border-bottom: 0.1em solid
+}
+
+summary::marker { color: #c00; }
+
+#mvbtns {
+  position: fixed;
+  bottom: 1rem;
+  height: 2em;
+  /* right: calc(50vw - 0.5 * var(--mvbtns-width)); */
+  right: calc(50vw - var(--all-width) / 2);
+  margin: 0;
+  transition: opacity 0.1s ease-in-out;
+  z-index: 1;
+}
+
+@media (max-width: 432px) { #mvbtns:not(.sidebtns) { right: calc(50vw - var(--all-width) / 1.95) } }
+@media (max-width: 324px) { #mvbtns:not(.sidebtns) { right: calc(50vw - var(--all-width) / 1.9) } }
+
+#mvbtns.sidebtns {
+  --btn-base-width: min(35vh, 10rem);
+  --all-width: clamp(10rem, 80vh, 35rem);
+  position: fixed;
+  width: 100vh;
+  margin: 0;
+  top: 0;
+  transform-origin: top right;
+  transform: rotate(-90deg);
+  z-index: 11;
+}
+
+#mvbtns.sidebtns.rightside {
+  right: calc(0.25 * var(--btn-base-width));
+}
+
+#mvbtns.sidebtns.leftside {
+  right: calc(100vw - 0.05 * var(--btn-base-width));
+}
+
+#ok {
+  display: block;
+  margin: 1rem auto; /* center */
+}
+
+#header button {
+  margin: 0.2rem;
+}
+
+#preloader {
+  display: none;
+}
+
+#player {
+  display: block;
+  /* centered with https://stackoverflow.com/a/2006008 */
+  margin-left: -5rem; /* negative half of width */
+  width: 10em;
+  left: 50vw;
+  /* sticky at top */
+  position: fixed;
+  top: 0;
+  /* hidden if no qari is selected */
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 30;  /* higher than the help toggle label */
+}
+
+/* help */
+
+.help-part {
+    margin-bottom: 0.4rem;
+}
+
+details, details * {
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* to apply margin only when open */
+details > :last-child  { margin-bottom: 0.8rem; }
+
+.details-content {
+    background-color: var(--details-bg);
+    box-shadow: 0 0 0.2em 0 var(--details-shadow);
+    width: calc(var(--all-width) - 10%);  /* minus 2 times side padding */
+    margin-right: -0.1em;  /* half blur radius */
+    padding-top:    0.4rem;
+    padding-bottom: 0.2rem;
+    padding-left:  5%;
+    padding-right: 5%;
+}
+
+b {
+  display: block;
+  color: black;
+  margin: 0.8rem 0 0.2rem 0;
+}
+
+a { color: blue; }
+a:visited { color: purple; }
+a:hover { text-shadow: 1pt 1pt 2pt lightblue; }
+a:active { color: red; text-shadow: 1pt 1pt 2pt lightblue; }
+
+.tab { display: none; }  /* hide the checkbox */
+.tab ~ label { user-select: none; }  /* it's easy to select it while clicking */
+
+#help { display: flex; flex-direction: column-reverse; }
+
+#help {
+  margin: 0;
+  box-sizing: border-box;
+  width: var(--all-width);
+}
+
+#optiontoggle         + label:before { content: "أظهر" }
+#optiontoggle:checked + label:before { content: "أخفِ"  }
+
+#helpcontent ul {
+    text-align: right;
+}
+
+.tab + label {
+  font-weight: normal; /* bold */
+  --label-gap: 0.5rem;
+  --small-width: 1rem;
+  --padding: 10px;
+  --height: 1.3rem;
+  --big-width: calc(var(--all-width) - 4*var(--padding) - var(--label-gap) - var(--small-width));  /* 2 paddings for each button */
+  line-height: 1.2;
+  padding: var(--padding);
+  height: var(--height);
+  background: var(--tab);
+  color: var(--tab-txt);
+  box-shadow: 1px 3px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 0 0 1rem 1rem;
+  z-index: 20;
+  position: relative;
+}
+#dark:checked ~ #body .tab + label {
+  box-shadow: 1px 3px 4px rgba(255, 255, 255, 0.3);
+}
+
+#optiontoggle + label {
+  width: var(--big-width);
+}
+
+#helptoggle + label {
+  width: var(--small-width);
+  right: calc(var(--big-width) + var(--label-gap) + 2*var(--padding));
+  top: calc(-1*var(--height) - 2*var(--padding));
+  margin-bottom: calc(-1*var(--height) - 1*var(--padding)); /* remove the space created by removing it; subtracted one padding not two to make room below */
+}
+
+.contentcontainer {
+  width: calc(var(--all-width) - 0.2rem);  /* minus 2 times side padding */
+  padding: 0.1rem;
+  padding-bottom: 1rem;
+  background: rgb(var(--content-rgb));
+  box-shadow: 1px 3px 4px rgba(0, 0, 0, 0.3);
+  margin: 0;
+  margin-top: -1.1rem;
+  z-index: 5;
+}
+
+#help summary {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+#helptoggle:not(checked) ~ #helpcontent {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 1s cubic-bezier(0, 1.0, 0, 1.0),
+              visibility 1s step-end;
+  visibility: hidden;
+}
+#helptoggle:checked ~ #helpcontent {
+  max-height: 32766px;
+  transition: max-height 3s ease-in,
+              visibility 3s step-start;
+  visibility: visible;
+}
+
+#optiontoggle:not(checked) ~ #options {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.55s ease-out,
+              visibility 0.55s step-end;
+  visibility: hidden;
+}
+#optiontoggle:checked ~ #options {
+  max-height: 21rem;
+  transition: max-height 0.5s linear,
+              visibility 0.5s step-start;
+  visibility: visible;
+}
+
+.tab + label:hover,
+.tab + label:focus {
+  background: var(--tab-active);
+  color: var(--tab-active-txt);
+}
+
+kbd {
+  font-family: serif;
+  direction: ltr;
+  font-size: 0.7rem;
+  /* based on https://meta.superuser.com/q/4788 */
+  background-color: #e7e7e7;
+  border: 1px solid #888;
+  border-radius: 0.5em;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2),
+              0 0 0 2px #fff inset;
+  color: #000;
+  display: inline-block;
+  margin: 0 0.1em;
+  padding: 0.1em 0.6em;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.roman { font-size: 80%; }
+.roman, .roman * {
+  font-family: serif;
+  direction: ltr;
+}
+
+summary { outline: none; } /* hide bounding box when click */
+
+/* https://stackoverflow.com/a/38215801 */
+details[open] > .details-content {
+  animation: fade-in .5s ease-in-out;
+}
+@keyframes fade-in {
+  0%    { opacity: 0; }
+  100%  { opacity: 1; }
+}
+
+#zzback { display: block; margin: auto; margin-top: 0.5em; }
+
+#end_of_header {
+  margin: 0;
+  margin-top: 0.2em
+}

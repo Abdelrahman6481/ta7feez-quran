@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<<!!# this file uses a small preprocessor to embed fonts and data; see index.html for the generated HTML file>>
+<<!!sh meta.sh>>
+<style>
+<<!!cat fonts.css>>
+<<!!cat style.css>>
+</style>
+</head>
+<body>
+<input type="checkbox" id="dark" hidden disabled>
+<!-- this checkbox is tied to darkmode_input by js; it's used to avoid FOUC on reload. -->
+<!-- https://alexandersandberg.com/theme-switcher/ -->
+<div id="body"> <!-- encompasses the content and bg -->
+<div id="all">  <!-- encompasses the content only -->
+
+<section id="help">
+
+<input type="checkbox" id="helptoggle" class="tab" onchange="help_toggled()">
+<label for="helptoggle">؟</label>
+<input type="checkbox" id="optiontoggle" class="tab" onchange="option_toggled()">
+<label for="optiontoggle">&nbsp;الخيارات</label>
+
+<div id="options" class="contentcontainer">
+
+  <div id="darkmode_option" class="option optionally-inline">
+    <label for="darkmode_input">الوضع الليلي؟&ensp;</label><input id="darkmode_input" type="checkbox" onchange="chstyle()">
+  </div>
+  <div id="teacher_option" class="option optionally-inline">
+    <label for="teacher_input">معلم؟ (التلاوة الصوتية قبل الآية)&ensp;</label><input id="teacher_input" type="checkbox" onchange="">
+  </div>
+
+  <!-- from: http://www.everyayah.com/data/recitations.js -->
+  <div class="option">
+    <label for="qaris">تلاوة بصوت:&ensp;</label><select id="qaris" oninput="audio.update_qari(this.value)">
+      <option value="" selected>بغير تلاوة صوتية</option>
+<<!!cat res/qaris | while read value; do read title; echo "    <option value=\"$value\">$title</option>"; done>>
+    </select>
+    <input type="hidden" id="qariurl" value="">
+  </div>
+
+  <hr id="guide">
+
+  <div id="quizmode_option" class="option">
+    <label for="quizmode">وضع التسميع:&ensp;</label><select id="quizmode" onchange="chquizmode()">
+      <option value="uthm" selected>عثماني (بلا كتابة) &mdash; تغييره يتطلب إعادة التسميع</option>
+      <option value="imla">إملائي (كتابة) &mdash; تغييره يتطلب إعادة التسميع</option>
+    </select>
+  </div>
+
+  <div class="mode_options" id="uthm_options">
+    <span id="uthm_options_title" class="mode_options_title">خيارات وضع التسميع العثماني (بلا كتابة):</span>
+
+    <div class="option">
+      <label for="mvbtns_input">موضع أزار التسميع:&ensp;</label><select id="mvbtns_input" onchange="chstyle()">
+        <option value="bottom" selected>أسفل</option>
+        <option value="right">يمين</option>
+        <option value="left">يسار</option>
+      </select>
+    </div>
+
+    <div class="option">
+      <label for="textclr_input">تلوين النص:&ensp;</label><select id="textclr_input" onchange="chstyle()">
+        <option value="taj" selected>تبعا لقواعد التجويد</option>
+        <option value="bas">تلوين أجزاء الرسم</option>
+        <option value="no">بغير أي تلوين</option>
+      </select>
+    </div>
+
+    <div class="option">
+      <label for="ayatnum_input">تلوين أرقام الآيات؟&ensp;</label><input id="ayatnum_input" type="checkbox" checked onchange="chstyle()">
+    </div>
+
+  </div>
+
+  <div class="mode_options" id="imla_options" style="display:none">
+    <span id="imla_options_title" class="mode_options_title">خيارات وضع التسميع الإملائي (كتابة):</span>
+
+    <div class="option">
+      <label for="feedbackrate">مراجعة الأخطاء كل:&ensp;</label><select id="feedbackrate" onchange="chfeedbackrate()">
+        <option value="" selected>حرف</option>
+        <option value="word">كلمة</option>
+      </select>
+    </div>
+
+  </div>
+
+</div>
+
+<dl class="contentcontainer" id="helpcontent">
+
+<br>
+<<!!perl processhelp.pl help.xmd>>
+
+</dl>
+</section>
+
+<audio id="player" controls preload></audio>
+<audio id="preloader" muted preload></audio>
+
+<!-- I used to use sura_start, sura_end, aya_start, and aya_end, but changed -->
+<!--  them to sura_bgn, sura_end, aaya_bgn, and aaya_end to make them equal in -->
+<!--  length and show their parallelism, thus making the code a little easier. -->
+<!-- Also note that aaya is a more accurate transliteration than aya and ayah, -->
+<!--  and rhymes with sura, both have a stressed, long vowel in the first -->
+<!--  syllable, and a short unstressed vowel in the second syllable. -->
+
+<p id="title"></p>
+
+<div id="selectors">
+
+  <div>
+    <label for="sura_bgn">من سورة:</label>
+    <select id="sura_bgn">
+      <option value="" selected>السورة</option>
+      <<!!sh -c 'i=0; cat res/suar-names | while read sura; do echo "<option value=\"$i\">$sura</option>"; i=$((i + 1)); done | tr -d "\n"'>>
+    </select>
+    <label for="aaya_bgn">الآية:</label>
+    <input id="aaya_bgn">
+  </div>
+
+  <div>
+    <label for="sura_end">إلى سورة:</label>
+    <select id="sura_end">
+      <option value="" selected>السورة</option>
+      <<!!sh -c 'i=0; cat res/suar-names | while read sura; do echo "<option value=\"$i\">$sura</option>"; i=$((i + 1)); done | tr -d "\n"'>>
+    </select>
+    <label for="aaya_end">الآية:</label>
+    <input id="aaya_end">
+  </div>
+
+<button disabled title="حدد ما تريد مراجعته أو تسميعه، ثم اضغط على هذا الزر." id="ok">ابدأ</button>
+<hr>
+
+</div>
+
+<div hidden id="header">
+<div>
+<button id="zzignore" hidden>تجاهل</button>
+<button title="اضغط لبدء مراجعة جديدة" id="new">جديد</button>
+<button title="اضغط لإعادة هذا التسميع من البداية" id="repeat">إعادة</button>
+</div>
+<hr id="end_of_header">
+</div>
+
+<div id="uthm_txt"></div>
+
+<textarea hidden id="imla_txt" placeholder="اكتب هنا">
+</textarea>
+
+<div hidden id="endmsg">
+بارك الله فيك وفتح عليك!&nbsp;<<!!cat res/party-popper.svg | tr -d "\n">>
+<!-- U+1F389 Party Popper, from NotoColorEmoji; https://github.com/googlefonts/noto-emoji/blob/master/svg/emoji_u1f389.svg -->
+<button id="zzback" hidden>عودة</button>
+</div>
+
+<!-- these svg arrows were designed in Inkscape by me and optimized with https://vecta.io/nano -->
+<div id="mvbtns" hidden>
+  <button title="أخف آية (زري Ctrl+BackSpace)" id="prevaaya"><svg viewBox="0 0 250 200" height="1000" width="1000"><path d="M195.826 237.711h-39.765l60.864-105.419-60.864-105.419h39.765l60.864 105.419zm-68.792 0H87.269l60.864-105.419-60.864-105.42h39.765l60.864 105.419zm-68.792 0H18.477l60.864-105.419-60.864-105.42h39.765l60.864 105.419z"/></svg></button>
+  <button title="أخف عبارة - حتى علامة وقف أو نهاية آية (زر رقم الواحد)" id="prevjmla"><svg viewBox="0 0 250 200" height="1000" width="1000"><path d="M161.43 237.711h-39.765l60.864-105.419-60.864-105.419h39.765l60.864 105.419zm-68.792 0H52.873l60.864-105.419-60.864-105.42h39.765l60.864 105.419z"/></svg></button>
+  <button title="أخف كلمة (زر BackSpace أو سهم يمين)" id="prevword"><svg viewBox="0 0 250 200" height="1000" width="1000"><path d="M127.034 237.711H87.269l60.864-105.419L87.269 26.872h39.765l60.864 105.419z"/></svg></button>
+  <button title="أظهر كلمة (زر Space أو Enter أو سهم يسار)" id="nextword"><svg viewBox="0 0 250 200" height="1000" width="1000"><path d="M137.549 237.711h39.765l-60.864-105.419 60.864-105.419h-39.765L76.686 132.292z"/></svg></button>
+  <button title="أظهر عبارة - حتى علامة وقف أو نهاية آية (زر رقم الصفر)" id="nextjmla"><svg viewBox="0 0 250 200" height="1000" width="1000"><path d="M103.154 237.711h39.765L82.055 132.292l60.864-105.419h-39.765L42.29 132.292zm68.791 0h39.765l-60.864-105.419 60.864-105.42h-39.765l-60.864 105.419z"/></svg></button>
+  <button title="أظهر آية (زري Ctrl+Space أو Ctrl+Enter)" id="nextaaya"><svg viewBox="0 0 250 200" height="1000" width="1000"><path d="M68.758 237.711h39.765L47.659 132.292l60.864-105.419H68.758L7.894 132.292zm68.791 0h39.765L116.45 132.292l60.864-105.419h-39.765L76.685 132.292zm68.792 0h39.765l-60.864-105.419 60.864-105.419h-39.765l-60.864 105.419z"/></svg></button>
+</div>
+
+
+</div>
+</div>
+
+<script src="res/jszip.min.js"></script>
+
+<script>
+    window.goatcounter = {
+        path: location.href,
+        allow_frame: true,
+        allow_local: true,
+    }
+</script>
+<!-- privacy-friendly statistics, no tracking of personal data, no need for GDPR consent; see goatcounter.com -->
+<script data-goatcounter="https://noureddin.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+<script>
+'use strict';
+
+<<!!cat a.js>>
+<<!!cat ligilumi.js>>
+
+<<!!#cat test.js>>
+// remove the '#' in the previous line to perform the tests
+
+<<!!cat javascript.js>>
+<<!!cat z.js>>
+
+</script>
+
+</body>
+</html>
+<!-- vim: set sw=2 ts=2 et colorcolumn=80: -->
